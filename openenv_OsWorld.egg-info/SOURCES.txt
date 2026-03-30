@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+./__init__.py
+./client.py
+./models.py
+openenv_OsWorld.egg-info/PKG-INFO
+openenv_OsWorld.egg-info/SOURCES.txt
+openenv_OsWorld.egg-info/dependency_links.txt
+openenv_OsWorld.egg-info/entry_points.txt
+openenv_OsWorld.egg-info/requires.txt
+openenv_OsWorld.egg-info/top_level.txt
+server/OsWorld_environment.py
+server/__init__.py
+server/app.py
