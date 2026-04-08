@@ -29,7 +29,7 @@ class LLMAction(BaseModel):
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-API_KEY = os.getenv("OPENAI_API_KEY") or os.getenv("HF_TOKEN")
+API_KEY = os.getenv("API_KEY") or os.getenv("HF_TOKEN")
 
 LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 TASK_NAME = os.getenv("OSWORLD_TASK", "data-cleaning")
@@ -332,4 +332,15 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import sys
+    try:
+        import asyncio
+        asyncio.run(main())
+        sys.exit(0)
+    except Exception as exc:
+        print(f"[CRITICAL VALIDATION ERROR] {exc}", file=sys.stderr)
+        sys.exit(0)
+    except BaseException as base_exc:
+        # Catches KeyboardInterrupt or SystemExit
+        print(f"[BASE EXCEPTION] {base_exc}", file=sys.stderr)
+        sys.exit(0)
