@@ -171,9 +171,10 @@ def build_prompt(obs_dict: Dict[str, Any], history: List[str]) -> str:
 
 def get_model_action(client: OpenAI, obs_dict: Dict[str, Any], history: List[str]) -> OsworldAction:
     prompt = build_prompt(obs_dict, history)
+    model_name = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 
     response = client.chat.completions.create(
-        model=MODEL_NAME,
+        model=model_name,
         messages=[
             {"role": "system", "content": "You are a professional data cleaning engineer."},
             {"role": "user", "content": prompt},
@@ -257,7 +258,9 @@ async def make_env() -> Any:
 
 
 async def main() -> None:
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+    api_base_url = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1")
+    api_key = os.environ.get("API_KEY") or os.environ.get("HF_TOKEN")
+    client = OpenAI(base_url=api_base_url, api_key=api_key)
 
     env = None
     try:
@@ -270,7 +273,7 @@ async def main() -> None:
             score = 0.0
             success = False
 
-            log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
+            log_start(task=TASK_NAME, env=BENCHMARK, model=os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct"))
             
             try:
                 if hasattr(env, "reset_async"):
