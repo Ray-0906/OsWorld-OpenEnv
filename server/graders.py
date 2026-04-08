@@ -30,7 +30,8 @@ class SemanticGrader:
         constraints: Dict[str, Any],
     ) -> float:
         """Compute the multi-component Phi score."""
-        content = files.get("data.csv", "")
+        target_file = constraints.get("target_file", "data.csv")
+        content = files.get(target_file, "")
 
         try:
             df = pd.read_csv(io.StringIO(content))
@@ -62,9 +63,9 @@ class SemanticGrader:
     def _content_score(self, df: pd.DataFrame, expected_df: pd.DataFrame) -> float:
         """
         F1-based row matching via inner merge on common columns.
-        Uses EXACT values — no normalization. Formatting differences
-        (whitespace, casing) correctly reduce this score.
-        Numeric coercion only (int/float comparison).
+        Uses soft-matching (normalization) for strings and numeric coercion.
+        This provides a smoother gradient for partial progress (e.g. agent 
+        gets correct data but forgets to strip whitespace).
         """
         common_cols = list(set(df.columns) & set(expected_df.columns))
         if not common_cols:
@@ -74,7 +75,7 @@ class SemanticGrader:
             df_cmp = df[common_cols].copy()
             exp_cmp = expected_df[common_cols].copy()
 
-            # Only coerce numeric types — leave strings exactly as-is
+            # Coerce numeric types AND normalize strings for softer partial-progress scoring
             for col in common_cols:
                 if exp_cmp[col].dtype in ("int64", "float64"):
                     df_cmp[col] = (
@@ -83,7 +84,9 @@ class SemanticGrader:
                         .astype(int)
                     )
                     exp_cmp[col] = exp_cmp[col].astype(int)
-                # Strings: no strip(), no lower() — exact match required
+                elif exp_cmp[col].dtype == "object":
+                    df_cmp[col] = df_cmp[col].astype(str).str.strip().str.lower()
+                    exp_cmp[col] = exp_cmp[col].astype(str).str.strip().str.lower()
 
             df_dedup = df_cmp.drop_duplicates()
             exp_dedup = exp_cmp.drop_duplicates()
@@ -146,7 +149,7 @@ class SemanticGrader:
     ) -> float:
         """
         Data quality: nulls in required cols, type correctness, string formatting.
-        Returns 0.0 (not 1.0) when no checks apply — no free points.
+        Returns 0.0 (not 1.0) when no checks apply  no free points.
         """
         if len(df) == 0:
             return 0.0
@@ -171,7 +174,7 @@ class SemanticGrader:
                 except Exception:
                     checks.append(0.0)
 
-        # 3. String formatting — values must be stripped and lowercased
+        # 3. String formatting  values must be stripped and lowercased
         for col in expected_df.columns:
             if col in df.columns and expected_df[col].dtype == "object":
                 try:
@@ -190,7 +193,7 @@ class SemanticGrader:
     def _constraint_score(self, df: pd.DataFrame, constraints: Dict[str, Any]) -> float:
         """
         Rule satisfaction: uniqueness, numeric ranges, required columns.
-        Returns 0.0 (not 1.0) when no checks apply — no free points.
+        Returns 0.0 (not 1.0) when no checks apply  no free points.
         """
         if len(df) == 0:
             return 0.0

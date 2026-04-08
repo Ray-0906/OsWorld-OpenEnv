@@ -6,7 +6,7 @@ We utilize a **Potential-Based Reward Shaping** architecture with regression pen
 
 ## Core Formula
 
-$$R = \text{step\_penalty} + \Delta\Phi + \text{regression\_penalty} + \text{terminal\_bonus}$$
+$$R = \text{step\_penalty} + \Delta\Phi + \text{regression\_penalty} + \text{error\_penalty} + \text{destructive\_penalty} + \text{terminal\_bonus} + \text{inspect\_first\_bonus}$$
 
 Where $\Phi$ is the multi-component grader score (see `02_grading_mechanics.md`).
 
@@ -26,23 +26,26 @@ Every action incurs a flat penalty of **-0.03**. This mathematically forces the 
 
 If an agent's action causes the score to *decrease* ($\Delta\Phi < 0$), an additional **-0.10** penalty is applied on top of the natural negative $\Delta\Phi$. This strongly discourages destructive actions and "try random things" strategies.
 
-## 4. Execution & Syntax Penalties
+## 4. Execution & Safety Penalties
 
-When the agent generates invalid Python logic (SyntaxError, runtime errors), the server traps the `traceback` and assesses an **-0.20** penalty. The error text is fed back into the observation's `screen_text` so the LLM can self-correct.
+When the agent generates invalid Python logic (SyntaxError, runtime errors), or uses unknown action types, an **-0.20** penalty is assessed. The error text is fed back into the observation's `screen_text` so the LLM can self-correct.
 
-This same penalty applies to unknown action types.
+Furthermore, if the agent performs a **destructive action** (e.g., catastrophically dropping more than 80% of rows), an additional **-0.50** penalty is applied.
 
-## 5. Terminal Bonus
+## 5. Bonuses
 
-When $\Phi \geq 1.0$ (score reaches perfect clean status), the environment issues a **+10.0 Terminal Reward Bonus** and flips `done = True`, concluding the episode.
+**Inspect-First Bonus (+0.05):** If the very first action the agent takes is a diagnostic one (`inspect_schema`, `view_head`, `read_file`), they receive a proactive +0.05 bonus. This reinforces "look-before-you-leap" methodology.
+
+**Terminal Bonus (Up to +2.00):** When $\Phi \geq 1.0$ (score reaches perfect clean status), the environment issues a terminal reward (max 2.0) and flips `done = True`, concluding the episode. This bonus is scaled dynamically by **efficiency** (`optimal_steps / actual_steps`); taking too many steps degrades this bonus toward 0.40.
 
 ## Summary Episode Flow
 
 1. **Start:** Score is $0.0$, Reward is $0.0$
-2. **Action 1 (Fix Schema):** Score becomes $0.40$. Reward = $+0.40$ (Differential) $- 0.03$ (Step) = $+0.37$
-3. **Action 2 (Syntax Error):** Score stays $0.40$. Reward = $-0.03$ (Step) $-0.20$ (Error) = $-0.23$
-4. **Action 3 (Bad Fix, Regresses):** Score drops to $0.30$. Reward = $-0.10$ (Diff) $-0.03$ (Step) $-0.10$ (Regression) = $-0.23$
-5. **Action 4 (Fix All Remaining):** Score hits $1.0$. Reward = $+0.70$ (Diff) $-0.03$ (Step) $+10.0$ (Terminal) = $+10.67$
+2. **Action 1 (Inspect Schema):** Score stays $0.0$. Reward = $-0.03$ (Step) $+0.05$ (Inspect Bonus) = $+0.02$
+3. **Action 2 (Fix Schema):** Score becomes $0.40$. Reward = $+0.40$ (Diff) $- 0.03$ (Step) = $+0.37$
+4. **Action 3 (Syntax Error):** Score stays $0.40$. Reward = $-0.03$ (Step) $-0.20$ (Error) = $-0.23$
+5. **Action 4 (Bad Fix, Regresses):** Score drops to $0.30$. Reward = $-0.10$ (Diff) $-0.03$ (Step) $-0.10$ (Regression) = $-0.23$
+6. **Action 5 (Fix All Remaining):** Score hits $1.0$. Reward = $+0.70$ (Diff) $-0.03$ (Step) $+1.0$ (Terminal) = $+1.67$
 
 **Total Episode Cumulative Return** evaluates how cleanly, efficiently, and intelligently the dataset was restored.
 
@@ -51,9 +54,11 @@ When $\Phi \geq 1.0$ (score reaches perfect clean status), the environment issue
 | Parameter | Value | Purpose |
 |-----------|-------|---------|
 | Step Penalty | -0.03 | Encourages efficiency |
-| Error Penalty | -0.20 | Punishes syntax/runtime errors |
-| Regression Penalty | -0.10 | Discourages destructive actions |
-| Terminal Bonus | +10.0 | Strong completion incentive |
+| Error Penalty | -0.20 | Punishes syntax/runtime errors and unknown actions |
+| Regression Penalty | -0.10 | Discourages destructive actions causing score drops |
+| Destructive Penalty| -0.50 | Harshly punishes catastrophic file truncation |
+| Inspect Bonus | +0.05 | Encourages dataset inspection before acting |
+| Terminal Bonus | +2.00 | Scaled completion incentive based on efficiency |
 
 ## Design Principle
 

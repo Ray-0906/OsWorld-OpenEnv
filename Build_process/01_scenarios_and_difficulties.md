@@ -4,111 +4,65 @@ The Data Cleaning Environment presents AI agents with simulated programmatic cha
 
 ## Task Architecture
 
-There are **6 task variants** grouped into 3 difficulty tiers. The environment cycles through variants automatically on each `reset()` call.
+There are **15 task variants** grouped into 3 difficulty tiers. The environment cycles through tiers automatically on each `reset()` call, advancing the variant within each tier sequentially.
 
-### 1. Easy Tier (2 issues per task)
-
-Tasks with a foundational schema issue combined with a focused data quality check.
+### 1. Easy Tier (4 variants)
+Fundamental schema and targeted parsing corrections.
 
 #### Variant A: Duplicate Removal
-- **Scenario:** The target CSV contains exact row duplicates and wrong column casing. 
 - **Goal:** Standardize column names to `id` and `name` and remove duplicate records.
-- **Start State:** 
-  ```csv
-  ID,Name
-  1,alice
-  2,bob
-  3,charlie
-  4,dave
-  2,bob
-  3,charlie
-  ```
-- **Expected End State:** Unique records for each entity with correct column names.
 
 #### Variant B: Format Normalization
-- **Scenario:** String fields contain inconsistent formatting — trailing spaces, mixed casing, and wrong column casing.
-- **Goal:** Rename columns, strip whitespace and normalize to lowercase.
-- **Start State:**
-  ```csv
-  ID,Name
-  1, Alice
-  2,BOB
-  3, Charlie
-  4,  dave
-  5,Eve 
-  ```
-- **Expected End State:** All names stripped and lowercased, columns renamed.
+- **Goal:** Rename columns, strip whitespace and normalize strings to lowercase.
+
+#### Variant C: Type Coercion
+- **Goal:** Convert semantic strings (e.g., '18 yrs', 'Yes') into true integers and booleans.
+
+#### Variant D: Column Rename Only
+- **Goal:** Minimal intervention task; just pure schema standardisation for 'Identifier', 'StudentName', 'TestScore'.
 
 ---
 
-### 2. Medium Tier (3-5 issues per task)
-
+### 2. Medium Tier (7 variants)
 Tasks combining structural issues with distinct semantic data quality problems.
 
 #### Variant A: Missing Value Imputation
-- **Scenario:** The target CSV has missing values (nulls/NaN) in data columns, wrong column casing, and an extra column.
-- **Goal:** Rename columns to `id` and `val`, drop the extra column, and fill missing values with `0`.
-- **Start State:**
-  ```csv
-  Id,Val,extra
-  1,10,junk
-  2,,junk
-  3,30,junk
-  4,,junk
-  5,50,junk
-  6,60,junk
-  ```
-- **Expected End State:** Correct schema and all blank cells filled with `0`.
+- **Goal:** Rename columns, drop extra columns, and fill missing numeric values with `0`.
 
 #### Variant B: Schema Repair
-- **Scenario:** Column names are completely non-standard (e.g., `IDENTIFIER` instead of `id`) and an extra junk column exists.
-- **Goal:** Rename columns to match expected schema (`id`, `val`) and drop the extra column.
-- **Start State:**
-  ```csv
-  IDENTIFIER,VALUE,flag
-  1,10,y
-  2,20,y
-  3,30,y
-  4,40,y
-  5,50,y
-  ```
-- **Expected End State:** Columns renamed to `id,val`, extra column removed.
+- **Goal:** Standardize completely non-standard column mappings and drop extraneous flag columns.
 
 #### Variant C: Constraint Enforcement
-- **Scenario:** The dataset has duplicate IDs, values outside valid ranges, wrong casing, and an extra column.
-- **Goal:** Rename columns, drop extra column, enforce unique `id` (keep first occurrence) and clamp `val` to `[0, 100]`.
-- **Start State:**
-  ```csv
-  Id,Val,extra
-  1,10,junk
-  1,25,junk
-  2,150,junk
-  3,-10,junk
-  4,80,junk
-  5,200,junk
-  ```
-- **Expected End State:** Unique IDs, values clamped to the valid range.
+- **Goal:** Enforce unique `id` and clamp values to valid ranges like `[0, 100]`.
+
+#### Variant D: Multi-File Join
+- **Goal:** Schema align `orders.csv` and `users.csv`, inner join on `user_id`, and output a unified tabular structure.
+
+#### Variant E: JSON Normalization
+- **Goal:** Flatten deeply nested and ragged structure dictionaries into a clean, standardized tabular dataframe.
+
+#### Variant F: SQL Extraction
+- **Goal:** Load SQL dumps into SQLite and exporting a normalized join of `users` and `purchases`.
+
+#### Variant G: HTML Scraping
+- **Goal:** Parse messy HTML tables into clean structured formats with standardized column names.
 
 ---
 
-### 3. Hard Tier (7-9 issues combined)
+### 3. Hard Tier (4 variants)
+Multi-step, destructive data recovery scenarios.
 
 #### Variant A: Corrupted Pipeline Recovery
-- **Scenario:** The dataset is fully compromised with **all issue types combined**: three non-standard column names, an extra column, duplicate rows, missing values, inconsistent formatting, and out-of-range constraints.
-- **Goal:** Execute a multi-step semantic cleaning strategy addressing all 9 issues.
-- **Start State:**
-  ```csv
-  ID,Name,Value,extra
-  1, Alice ,10,junk
-  1, ALICE ,10,junk
-  2, Bob ,40,junk
-  3,CHARLIE ,150,junk
-  4, dave,,junk
-  5,  EVE,-5,junk
-  6,frank ,80,junk
-  7, Grace ,90,junk
-  ```
-- **Expected End State:** A fully clean dataset with correct schema, unique records, filled values, normalized strings, and clamped ranges.
+- **Goal:** A dataset fully compromised with string formatting out of alignment, duplicate rows, missing values, and out-of-range constraints.
+
+#### Variant B: Adversarial Corruption
+- **Goal:** Syntactically intact but semantically impossible constraints. Clipping boundary logic required.
+
+#### Variant C: Cascading Pipeline
+- **Goal:** Multi-file dependency logic. Extract rates, compute new columns, fill bounds, and save to a final composite file.
+
+#### Variant D: Log Parsing
+- **Goal:** Extract structured records from unstructured system logs, ignoring lines with invalid metrics.
 
 ## Agent Constraints
 - The agent only "sees" the files exposed in the `files` observation dict.
