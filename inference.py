@@ -224,7 +224,7 @@ async def make_env() -> Any:
     if LOCAL_IMAGE_NAME:
         return await OsworldEnv.from_docker_image(LOCAL_IMAGE_NAME)
 
-    env_url = os.getenv("OSWORLD_API_URL", "http://127.0.0.1:8000")
+    env_url = os.getenv("OSWORLD_API_URL", "https://aniket2886-osworld.hf.space")
     env = OsworldEnv(base_url=env_url)
     if hasattr(env, "sync"):
         return env.sync()
