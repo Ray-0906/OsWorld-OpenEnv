@@ -69,7 +69,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run the Osworld Environment Server")
     parser.add_id = True # Dummy to prevent issues if needed
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host address to bind to")
-    parser.add_argument("--port", type=int, default=8000, help="Port number to listen on")
+    parser.add_argument("--port", type=int, default=7860, help="Port number to listen on")
     args = parser.parse_args()
 
     uvicorn.run(app, host=args.host, port=args.port)

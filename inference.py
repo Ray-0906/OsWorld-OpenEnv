@@ -221,11 +221,37 @@ def get_model_action(client: OpenAI, obs_dict: Dict[str, Any], history: List[str
 
 
 async def make_env() -> Any:
-    env_url = os.getenv("OSWORLD_API_URL", "https://aniket2886-osworld.hf.space")
-    env = OsworldEnv(base_url=env_url)
-    if hasattr(env, "sync"):
-        return env.sync()
-    return env
+    # if LOCAL_IMAGE_NAME:
+    #     import time
+    #     max_retries = 30
+    #     for attempt in range(max_retries):
+    #         try:
+    #             return await OsworldEnv.from_docker_image(LOCAL_IMAGE_NAME)
+    #         except Exception as e:
+    #             import sys
+    #             print(f"[SYSTEM ERROR] Failed to start Docker environment (attempt {attempt+1}/{max_retries}): {e}", file=sys.stderr)
+    #             if attempt < max_retries - 1:
+    #                 await asyncio.sleep(5.0)
+    #             else:
+    #                 raise
+
+    env_url = os.getenv("OSWORLD_API_URL", "https://aniket2886-osworld.hf.space/")
+    
+    max_retries = 30
+    for attempt in range(max_retries):
+        try:
+            env = OsworldEnv(base_url=env_url)
+            if hasattr(env, "sync"):
+                return env.sync()
+            return env
+        except Exception as e:
+            import sys
+            print(f"[SYSTEM ERROR] Env connection to {env_url} failed (attempt {attempt+1}/{max_retries}): {e}", file=sys.stderr)
+            if attempt < max_retries - 1:
+                await asyncio.sleep(5.0)
+            else:
+                raise
+
 
 
 async def main() -> None:
