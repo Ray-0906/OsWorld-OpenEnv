@@ -42,6 +42,9 @@ FROM python:3.10-slim
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
+# Install socat (for port forwarding) and curl (for health checks)
+RUN apt-get update && apt-get install -y --no-install-recommends socat curl && rm -rf /var/lib/apt/lists/*
+
 # Copy the pre-built virtual environment from the builder stage
 COPY --from=builder /app/.venv /app/.venv
 # Copy the cleaned source code
@@ -56,7 +59,7 @@ EXPOSE 7860
 
 # Health Check to verify the FastAPI bridge is active
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:7860/health || exit 1
+    CMD curl -f http://127.0.0.1:7860/health || exit 1
 
-# Start the environment server
-CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860"]
+# Start socat in the background to forward 7860 -> 8000, and start uvicorn on 8000
+CMD socat TCP-LISTEN:7860,fork,reuseaddr TCP:127.0.0.1:8000 & uvicorn server.app:app --host 0.0.0.0 --port 8000
