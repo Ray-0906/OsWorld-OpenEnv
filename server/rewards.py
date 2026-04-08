@@ -60,7 +60,7 @@ class RewardCalculator:
             reward += self.regression_penalty
 
         # Terminal bonus (efficiency scaled)
-        if done and new_score >= 1.0:
+        if done and new_score >= 0.99:
             efficiency_ratio = min(1.0, optimal_steps / max(1, step_count))
             # Floor at 20% of terminal reward so they still get something for succeeding
             efficiency_ratio = max(0.2, efficiency_ratio)

@@ -36,11 +36,11 @@ class SemanticGrader:
         try:
             df = pd.read_csv(io.StringIO(content))
         except Exception:
-            return 0.0
+            return 0.0001
 
         # Empty agent output -> 0
         if len(df) == 0 and len(expected_df) > 0:
-            return 0.0
+            return 0.0001
 
         content_score = self._content_score(df, expected_df)
         schema_score = self._schema_score(df, expected_df, constraints)
@@ -56,7 +56,7 @@ class SemanticGrader:
             - extra_penalty
         )
 
-        return min(1.0, max(0.0, round(phi, 4)))
+        return min(0.9999, max(0.0001, round(phi, 4)))
 
     # -- Content Score (F1) ------------------------------------------
 

@@ -81,7 +81,7 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
     print(
-        f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}",
+        f"[END] success={str(success).lower()} steps={steps} score={score:.4f} rewards={rewards_str}",
         flush=True,
     )
 
@@ -328,7 +328,7 @@ async def main() -> None:
                         error = error or obs.screen_text
 
                     score = float(getattr(obs, "score", score) or score)
-                    score = max(0.0, min(1.0, score))
+                    score = max(0.0001, min(0.9999, score))
 
                     log_step(step=step, action=action_str, reward=reward, done=done, error=error)
 
@@ -337,8 +337,8 @@ async def main() -> None:
                     if done:
                         break
 
-                score = max(0.0, min(1.0, float(score)))
-                success = score >= 1.0
+                score = max(0.0001, min(0.9999, float(score)))
+                success = score >= 0.99
 
             except Exception as exc:
                 import sys
