@@ -142,11 +142,11 @@ class OsworldEnvironment(Environment):
             f = io.StringIO()
             try:
                 with contextlib.redirect_stdout(f):
-                    local_vars = {"files": self.files}
+                    exec_env = {"files": self.files}
                     exec(
                         "import pandas as pd\nimport io\nimport traceback\n" + code,
-                        {},
-                        local_vars,
+                        exec_env,
+                        exec_env,
                     )
                 self.screen_text = (
                     f.getvalue() or f"Successfully executed: {len(code)} chars."
@@ -166,11 +166,11 @@ class OsworldEnvironment(Environment):
             f = io.StringIO()
             try:
                 with contextlib.redirect_stdout(f):
-                    local_vars = {"files": self.files}
+                    exec_env = {"files": self.files}
                     exec(
                         "import pandas as pd\nimport io\nimport traceback\n" + code,
-                        {},
-                        local_vars,
+                        exec_env,
+                        exec_env,
                     )
                 self.screen_text = (
                     "PREVIEW ONLY - NO CHANGES SAVED\n" + (f.getvalue() or f"Successfully executed: {len(code)} chars.")
