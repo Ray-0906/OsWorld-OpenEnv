@@ -306,6 +306,7 @@ async def main() -> None:
                         env_action = OsworldAction(action_type=action_type, payload=payload_dict)
                         action_str = compact_action_string(action_type, payload_dict)
                     except Exception as e:
+                        
                         env_action = OsworldAction(action_type="pass", payload={})
                         action_str = compact_action_string("pass", {})
 

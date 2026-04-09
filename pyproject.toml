@@ -26,6 +26,9 @@ dependencies = [
     "lxml>=5.1.0",
     "beautifulsoup4>=4.12.0",
     "html5lib>=1.1",
+    "python-dotenv",
+    "openai",
+    "pydantic",
 ]
 
 [project.optional-dependencies]

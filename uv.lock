@@ -1781,11 +1781,14 @@ dependencies = [
     { name = "lxml" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "openai" },
     { name = "openenv-core", extra = ["core"] },
     { name = "openpyxl" },
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "pandas", version = "3.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
     { name = "uvicorn" },
 ]
 
@@ -1803,12 +1806,15 @@ requires-dist = [
     { name = "html5lib", specifier = ">=1.1" },
     { name = "lxml", specifier = ">=5.1.0" },
     { name = "numpy", specifier = ">=1.20.0" },
+    { name = "openai" },
     { name = "openenv-core", extras = ["core"], specifier = ">=0.2.1" },
     { name = "openpyxl", specifier = ">=3.1.0" },
     { name = "pandas", specifier = ">=2.0.0" },
     { name = "pyarrow", specifier = ">=15.0.0" },
+    { name = "pydantic" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
+    { name = "python-dotenv" },
     { name = "uvicorn", specifier = ">=0.24.0" },
 ]
 provides-extras = ["dev"]

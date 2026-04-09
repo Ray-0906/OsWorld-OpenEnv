@@ -242,7 +242,7 @@ class OsworldEnvironment(Environment):
 
         #  Grading & Reward 
         new_score = self._current_score()
-        done = self._state.step_count >= self.max_steps or new_score >= 1.0
+        done = self._state.step_count >= self.max_steps or new_score >= 0.99
 
         # Check for destructive action
         is_destructive = False
