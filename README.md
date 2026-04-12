@@ -111,10 +111,12 @@ Actions are structured Pydantic models. The agent may emit:
 | Action | Description |
 |---|---|
 | `execute_python` | Execute a Python snippet in the sandboxed environment |
+| `preview_changes` | Test code without saving changes (zero-risk dry run) |
 | `inspect_schema` | View column names and dtypes of a file |
 | `view_head` | Preview the first N rows of a file |
 | `read_file` | Read raw file contents |
-| `invalid` | Malformed or unrecognized action |
+| `remove_duplicates` | Utility to deduplicate a file by exact row match |
+| `fill_nulls` | Utility to fill missing values in a file |
 
 The agent primarily uses `execute_python` to manipulate files. Inspection actions are available and rewarded when used strategically on the first step.
 
@@ -316,9 +318,9 @@ Baseline scores on a single episode per task variant using `Qwen/Qwen2.5-72B-Ins
 
 | Tier | Mean Phi | Mean Steps |
 |---|---|---|
-| Easy | — | — |
-| Medium | — | — |
-| Hard | — | — |
+| Easy | 0.9999 | 2 |
+| Medium | 0.9999 | 8 |
+| Hard | 0.3965 | 10 |
 
 > Run `inference.py` to populate baseline scores for your model.
 

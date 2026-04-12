@@ -35,7 +35,7 @@ LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 TASK_NAME = os.getenv("OSWORLD_TASK", "data-cleaning")
 BENCHMARK = os.getenv("OSWORLD_BENCHMARK", "osworld")
 
-NUM_EPISODES = int(os.getenv("NUM_EPISODES", 15))
+NUM_EPISODES = int(os.getenv("NUM_EPISODES", 3))
 
 MAX_STEPS = 10
 TEMPERATURE = 0.0
@@ -291,7 +291,7 @@ async def main() -> None:
 
                     obs_dict = obs.model_dump() if hasattr(obs, "model_dump") else obs.dict()
                     try:
-                        action = get_model_action(client, obs_dict, history)
+                        action = await asyncio.to_thread(get_model_action, client, obs_dict, history)
                         action_type = action.action_type
                         
                         payload_obj = action.payload
